@@ -109,7 +109,10 @@ async def restart_brief(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def main():
     app = ApplicationBuilder().token(TOKEN).build()
     conv = ConversationHandler(
-        entry_points=[CommandHandler("start", start)],
+        entry_points=[
+            CommandHandler("start", start),
+            CallbackQueryHandler(restart_brief, pattern="^new_brief$")
+        ],
         states={
             CHOOSING_BOT: [MessageHandler(filters.TEXT & ~filters.COMMAND, choose_brief)],
             ASKING_QUESTIONS: [MessageHandler(filters.TEXT & ~filters.COMMAND, collect_answers)],
