@@ -1,11 +1,11 @@
 import os
-from telegram import Update, ReplyKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler
+from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler, CallbackQueryHandler
 
 TOKEN = os.getenv("BOT_TOKEN", "7069058142:AAEixiLxYdobVbfJ4haLR8VQUsS5DQbvHCY")
 ADMIN_ID = 108629951
 
-CHOOSING_BOT, ASKING_QUESTIONS = range(2)
+CHOOSING_BOT, ASKING_QUESTIONS, ASKING_CONTACT = range(3)
 user_data = {}
 briefs = {
     "Консультация": [
@@ -51,7 +51,7 @@ async def choose_brief(update: Update, context: ContextTypes.DEFAULT_TYPE):
     }
 
     first_q = briefs[choice][0]
-    await update.message.reply_text(first_q)
+    await update.message.reply_text(first_q, reply_markup=ReplyKeyboardRemove())
     return ASKING_QUESTIONS
 
 async def collect_answers(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -71,15 +71,40 @@ async def collect_answers(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(next_q)
         return ASKING_QUESTIONS
     else:
-        # анкета завершена
-        summary = f"Новая анкета по брифу: {data['brief']}\n\n"
-        for i, answer in enumerate(data["answers"]):
-            q = briefs[data["brief"]][i]
-            summary += f"{q}\n→ {answer}\n\n"
-        await update.message.reply_text("Спасибо! Анкета отправлена.")
-        await context.bot.send_message(chat_id=ADMIN_ID, text=summary)
-        user_data.pop(chat_id)
-        return ConversationHandler.END
+        await update.message.reply_text("Напоследок — оставьте контакт для связи (телеграм, почта или телефон):")
+        return ASKING_CONTACT
+
+async def collect_contact(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.effective_chat.id
+    contact_info = update.message.text
+    data = user_data.get(chat_id)
+
+    summary = f"Новая анкета по брифу: {data['brief']}\n\n"
+    for i, answer in enumerate(data["answers"]):
+        q = briefs[data["brief"]][i]
+        summary += f"{q}\n→ {answer}\n\n"
+    summary += f"Контакт для связи:\n→ {contact_info}\n\n"
+
+    await update.message.reply_text("Спасибо! Анкета отправлена.")
+    await context.bot.send_message(chat_id=ADMIN_ID, text=summary)
+
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("Ещё один бриф", callback_data="new_brief")]
+    ])
+    await update.message.reply_text("Хочешь заполнить ещё один бриф?", reply_markup=keyboard)
+
+    user_data.pop(chat_id)
+    return ConversationHandler.END
+
+async def restart_brief(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    kb = [["Консультация", "Бот для ленивых"], ["Бот под ключ"]]
+    await query.message.reply_text(
+        "Хорошо, начнём заново. Выбери формат:",
+        reply_markup=ReplyKeyboardMarkup(kb, resize_keyboard=True)
+    )
+    return CHOOSING_BOT
 
 def main():
     app = ApplicationBuilder().token(TOKEN).build()
@@ -88,10 +113,13 @@ def main():
         states={
             CHOOSING_BOT: [MessageHandler(filters.TEXT & ~filters.COMMAND, choose_brief)],
             ASKING_QUESTIONS: [MessageHandler(filters.TEXT & ~filters.COMMAND, collect_answers)],
+            ASKING_CONTACT: [MessageHandler(filters.TEXT & ~filters.COMMAND, collect_contact)],
         },
-        fallbacks=[]
+        fallbacks=[],
+        allow_reentry=True
     )
     app.add_handler(conv)
+    app.add_handler(CallbackQueryHandler(restart_brief, pattern="^new_brief$"))
     app.run_polling()
 
 if __name__ == "__main__":
