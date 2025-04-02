@@ -66,25 +66,20 @@ async def collect_answers(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data["answers"].append(user_text)
     data["current_q"] += 1
 
-    if data["current_q"] < len(briefs[data["brief"]]):
-        next_q = briefs[data["brief"]][data["current_q"]]
-        await update.message.reply_text(next_q)
-        return ASKING_QUESTIONS
-    else:
-        # анкета завершена
-        summary = f"Новая анкета по брифу: {data['brief']}
-
-"
-        for i, answer in enumerate(data["answers"]):
-            q = briefs[data["brief"]][i]
-            summary += f"{q}
-→ {answer}
-
-"
-        await update.message.reply_text("Спасибо! Анкета отправлена.")
-        await context.bot.send_message(chat_id=ADMIN_ID, text=summary)
-        user_data.pop(chat_id)
-        return ConversationHandler.END
+if data["current_q"] < len(briefs[data["brief"]]):
+    next_q = briefs[data["brief"]][data["current_q"]]
+    await update.message.reply_text(next_q)
+    return ASKING_QUESTIONS
+else:
+    # анкета завершена
+    summary = f"Новая анкета по брифу: {data['brief']}\n\n"
+    for i, answer in enumerate(data["answers"]):
+        q = briefs[data["brief"]][i]
+        summary += f"{q}\n→ {answer}\n\n"
+    await update.message.reply_text("Спасибо! Анкета отправлена.")
+    await context.bot.send_message(chat_id=ADMIN_ID, text=summary)
+    user_data.pop(chat_id)
+    return ConversationHandler.END
 
 def main():
     app = ApplicationBuilder().token(TOKEN).build()
