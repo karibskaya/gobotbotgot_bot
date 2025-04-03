@@ -31,7 +31,7 @@ briefs = {
         "Какую задачу он решает для пользователей?",
         "Что он должен уметь?",
         "Какие интеграции или данные должны быть внутри?",
-        "Какая у вас желаемая дата запуска?", parse_mode="HTML"
+        "Какая у вас желаемая дата запуска?"
     ]
 }
 
@@ -57,7 +57,7 @@ async def choose_brief(update: Update, context: ContextTypes.DEFAULT_TYPE):
     }
 
     first_q = briefs[choice][0]
-    await update.message.reply_text(first_q, reply_markup=ReplyKeyboardRemove())
+    await update.message.reply_text(first_q, reply_markup=ReplyKeyboardRemove(), parse_mode='HTML')
     return ASKING_QUESTIONS
 
 async def collect_answers(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -74,7 +74,7 @@ async def collect_answers(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if data["current_q"] < len(briefs[data["brief"]]):
         next_q = briefs[data["brief"]][data["current_q"]]
-        await update.message.reply_text(next_q)
+        await update.message.reply_text(next_q, parse_mode='HTML')
         return ASKING_QUESTIONS
     else:
         await update.message.reply_text("Напоследок — оставьте контакт для связи (телеграм, почта или телефон):")
