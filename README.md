@@ -115,17 +115,23 @@ briefs = {
 
 Контакт для связи:
 → @username
-Как запустить проект
+
+## Как запустить проект
+
 Клонировать репозиторий:
-git clone https://github.com/karibskaya/brief-bot.git
+git clone https://github.com/karibskaya/gobotbotgot_bot.git
 cd brief-bot
+
 Установить зависимости:
 pip install python-telegram-bot
+
 Создать переменную окружения с токеном бота:
 export BOT_TOKEN="your_telegram_bot_token"
+
 Запустить бота:
 python main.py
-Настройки
+
+## Настройки
 
 В коде используются две основные настройки:
 
