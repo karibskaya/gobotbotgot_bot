@@ -2,8 +2,8 @@ import os
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler, CallbackQueryHandler
 
-TOKEN = os.getenv("BOT_TOKEN", "7069058142:AAEixiLxYdobVbfJ4haLR8VQUsS5DQbvHCY")
-ADMIN_ID = 108629951
+TOKEN = os.getenv("BOT_TOKEN", "***")
+ADMIN_ID = ***
 
 CHOOSING_BOT, ASKING_QUESTIONS, ASKING_CONTACT = range(3)
 user_data = {}
