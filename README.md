@@ -120,7 +120,7 @@ briefs = {
 
 Клонировать репозиторий:
 git clone https://github.com/karibskaya/gobotbotgot_bot.git
-cd brief-bot
+cd gobotbotgot_bot
 
 Установить зависимости:
 pip install python-telegram-bot
